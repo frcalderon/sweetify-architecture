@@ -1,0 +1,80 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ms-commands
+  namespace: sweetify
+data:
+  application.yml: |-
+    server:
+      port: 8080
+    spring:
+      application:
+        name: ms-commands
+      profiles:
+        active:
+          - dev
+      security:
+        oauth2:
+          resourceserver:
+            jwt:
+              issuer-uri: http://keycloak:8080/realms/sweetify
+      datasource:
+        url: jdbc:postgresql://commands-db:5432/commands
+        username: admin
+        password: admin
+        driver-class-name: org.postgresql.Driver
+      jpa:
+        database: POSTGRESQL
+        hibernate:
+          ddl-auto: update
+        show-sql: true
+    eureka:
+      client:
+        service-url:
+          defaultZone: http://discovery-server:8761/eureka/
+    ms-commands:
+      ms-products:
+        base-url: http://localhost:8082/products/
+        add-stock-uri: stock/add
+        consume-stock-uri: stock/consume
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-commands
+  namespace: sweetify
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app: ms-commands
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-commands
+  namespace: sweetify
+  labels:
+    app: ms-commands
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms-commands
+  template:
+    metadata:
+      labels:
+        app: ms-commands
+    spec:
+      serviceAccountName: spring-cloud-kubernetes
+      containers:
+        - name: ms-commands
+          image: frcalderon/sweetify-ms-commands
+          imagePullPolicy: Always
+          env:
+            - name: SPRING_CLOUD_BOOTSTRAP_ENABLED
+              value: "true"

@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: commands-db-persistent-volume
+  namespace: sweetify
+  labels:
+    type: local
+    app: commands-db
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/data/db"
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: commands-db-persistent-volume-claim
+  namespace: sweetify
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 8Gi
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: commands-db-secret-credentials
+  namespace: sweetify
+  labels:
+    app: commands-db
+data:
+  POSTGRES_DB: commands
+  POSTGRES_USER: admin
+  POSTGRES_PASSWORD: admin
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: commands-db
+  namespace: sweetify
+spec:
+  type: NodePort
+  ports:
+    - port: 5432
+  selector:
+    app: commands-db
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: commands-db
+  namespace: sweetify
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: commands-db
+  template:
+    metadata:
+      labels:
+        app: commands-db
+    spec:
+      containers:
+        - name: commands-db
+          image: postgres
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: commands-db-secret-credentials
+          volumeMounts:
+            - mountPath: /var/lib/postgres/data
+              name: db-data
+      volumes:
+        - name: db-data
+          persistentVolumeClaim:
+            claimName: commands-db-persistent-volume-claim

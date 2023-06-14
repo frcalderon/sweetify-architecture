@@ -46,3 +46,33 @@ spec:
                 name: configuration-server
                 port:
                   number: 8888
+    - host: products.sweetify.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ms-products
+                port:
+                  number: 8080
+    - host: commands.sweetify.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ms-commands
+                port:
+                  number: 8080
+    - host: stock.sweetify.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ms-stock
+                port:
+                  number: 8080

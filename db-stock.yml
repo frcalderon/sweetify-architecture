@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: stock-db-persistent-volume
+  namespace: sweetify
+  labels:
+    type: local
+    app: stock-db
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/data/db"
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: stock-db-persistent-volume-claim
+  namespace: sweetify
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 8Gi
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: stock-db-secret-credentials
+  namespace: sweetify
+  labels:
+    app: stock-db
+data:
+  POSTGRES_DB: stock
+  POSTGRES_USER: admin
+  POSTGRES_PASSWORD: admin
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: stock-db
+  namespace: sweetify
+spec:
+  type: NodePort
+  ports:
+    - port: 5432
+  selector:
+    app: stock-db
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stock-db
+  namespace: sweetify
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stock-db
+  template:
+    metadata:
+      labels:
+        app: stock-db
+    spec:
+      containers:
+        - name: stock-db
+          image: postgres
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: stock-db-secret-credentials
+          volumeMounts:
+            - mountPath: /var/lib/postgres/data
+              name: db-data
+      volumes:
+        - name: db-data
+          persistentVolumeClaim:
+            claimName: stock-db-persistent-volume-claim
