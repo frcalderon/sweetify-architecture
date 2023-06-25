@@ -12,7 +12,7 @@ data:
         name: ms-stock
       profiles:
         active:
-          - dev
+          - prod
       security:
         oauth2:
           resourceserver:
@@ -34,7 +34,7 @@ data:
           defaultZone: http://discovery-server:8761/eureka/
     ms-stock:
       ms-products:
-        base-url: http://localhost:8082/ingredients/
+        base-url: http://ms-products:8080/ingredients/
         add-stock-uri: stock/add
         consume-stock-uri: stock/consume
 
@@ -78,3 +78,5 @@ spec:
           env:
             - name: SPRING_CLOUD_BOOTSTRAP_ENABLED
               value: "true"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"

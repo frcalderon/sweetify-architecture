@@ -12,7 +12,7 @@ data:
         name: ms-products
       profiles:
         active:
-          - dev
+          - prod
       security:
         oauth2:
           resourceserver:
@@ -73,3 +73,5 @@ spec:
           env:
             - name: SPRING_CLOUD_BOOTSTRAP_ENABLED
               value: "true"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"

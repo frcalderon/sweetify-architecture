@@ -1,3 +1,54 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: api-gateway
+  namespace: sweetify
+data:
+  application.yml: |-
+    spring:
+      application:
+        name: api-gateway
+      profiles:
+        active:
+          - dev
+      cloud:
+        gateway:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+          routes:
+            - id: commands
+              uri: http://ms-commands:8080/
+              predicates:
+              - Path=/commands/**
+              filters:
+              - RewritePath=/commands/(?<path>.*), /$\{path}
+            - id: products
+              uri: http://ms-products:8080/
+              predicates:
+              - Path=/products/**
+              filters:
+              - RewritePath=/products/(?<path>.*), /$\{path}
+            - id: ingredients
+              uri: http://ms-products:8080/
+              predicates:
+              - Path=/ingredients/**
+              filters:
+              - RewritePath=/ingredients/(?<path>.*), /$\{path}
+            - id: stock
+              uri: http://ms-stock:8080/
+              predicates:
+              - Path=/stock/**
+              filters:
+              - RewritePath=/stock/(?<path>.*), /$\{path}
+    eureka:
+      client:
+        service-url:
+          defaultZone: http://discovery-server:8761/eureka/
+
+---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -28,14 +79,11 @@ spec:
       labels:
         app: api-gateway
     spec:
+      serviceAccountName: spring-cloud-kubernetes
       containers:
         - name: api-gateway
           image: frcalderon/sweetify-api-gateway
           imagePullPolicy: Always
           env:
-            - name: SPRING_PROFILES_ACTIVE
-              value: prod
-            - name: SPRING_CONFIG_IMPORT
-              value: http://configuration-server:8888/
-            - name: EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE
-              value: http://discovery-server:8761/eureka/
+            - name: SPRING_CLOUD_BOOTSTRAP_ENABLED
+              value: "true"
