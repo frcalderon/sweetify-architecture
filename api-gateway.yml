@@ -22,26 +22,18 @@ data:
               uri: http://ms-commands:8080/
               predicates:
               - Path=/commands/**
-              filters:
-              - RewritePath=/commands/(?<path>.*), /$\{path}
             - id: products
               uri: http://ms-products:8080/
               predicates:
               - Path=/products/**
-              filters:
-              - RewritePath=/products/(?<path>.*), /$\{path}
             - id: ingredients
               uri: http://ms-products:8080/
               predicates:
               - Path=/ingredients/**
-              filters:
-              - RewritePath=/ingredients/(?<path>.*), /$\{path}
             - id: stock
               uri: http://ms-stock:8080/
               predicates:
               - Path=/stock/**
-              filters:
-              - RewritePath=/stock/(?<path>.*), /$\{path}
     eureka:
       client:
         service-url:

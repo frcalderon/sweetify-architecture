@@ -28,10 +28,6 @@ data:
         hibernate:
           ddl-auto: update
         show-sql: true
-    eureka:
-      client:
-        service-url:
-          defaultZone: http://discovery-server:8761/eureka/
     ms-stock:
       ms-products:
         base-url: http://ms-products:8080/ingredients/
@@ -80,3 +76,19 @@ spec:
               value: "true"
             - name: SPRING_PROFILES_ACTIVE
               value: "prod"
+
+---
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-ms-stock
+  namespace: sweetify
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ms-stock
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 50
