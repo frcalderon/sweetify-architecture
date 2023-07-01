@@ -13,10 +13,6 @@ data:
           - dev
       cloud:
         gateway:
-          discovery:
-            locator:
-              enabled: true
-              lower-case-service-id: true
           routes:
             - id: commands
               uri: http://ms-commands:8080/
@@ -34,10 +30,7 @@ data:
               uri: http://ms-stock:8080/
               predicates:
               - Path=/stock/**
-    eureka:
-      client:
-        service-url:
-          defaultZone: http://discovery-server:8761/eureka/
+
 
 ---
 
